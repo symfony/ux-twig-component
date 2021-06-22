@@ -18,5 +18,7 @@ namespace Symfony\UX\TwigComponent;
  */
 interface ComponentInterface
 {
-    public static function getComponentName(): string;
+	public static function getComponentName(): string;
+
+	public static function getTemplate(): ?string;
 }

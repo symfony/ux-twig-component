@@ -13,9 +13,9 @@ Every component consists of (1) a class:
 // src/Components/AlertComponent.php
 namespace App\Components;
 
-use Symfony\UX\TwigComponent\ComponentInterface;
+use Symfony\UX\TwigComponent\AbstractComponent;
 
-class AlertComponent implements ComponentInterface
+class AlertComponent extends AbstractComponent
 {
     public string $type = 'success';
     public string $message;
@@ -23,6 +23,12 @@ class AlertComponent implements ComponentInterface
     public static function getComponentName(): string
     {
         return 'alert';
+    }
+
+    // optional, specify template name 
+    public static function getTemplate() : ?string
+    {
+        return '@App/components/alert.html.twig';
     }
 }
 ```

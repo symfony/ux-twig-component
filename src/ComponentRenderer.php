@@ -20,19 +20,19 @@ use Twig\Environment;
  */
 final class ComponentRenderer
 {
-    private $twig;
+	private $twig;
 
-    public function __construct(Environment $twig)
-    {
-        $this->twig = $twig;
-    }
+	public function __construct(Environment $twig)
+	{
+		$this->twig = $twig;
+	}
 
-    public function render(ComponentInterface $component): string
-    {
-        // TODO: Template attribute/annotation/interface to customize
-        // TODO: Self-Rendering components?
-        $templateName = sprintf('components/%s.html.twig', $component::getComponentName());
+	public function render(ComponentInterface $component): string
+	{
+		// TODO: Template attribute/annotation/interface to customize
+		// TODO: Self-Rendering components?
+		$templateName = $component::getTemplate() ?? sprintf('components/%s.html.twig', $component::getComponentName());
 
-        return $this->twig->render($templateName, ['this' => $component]);
-    }
+		return $this->twig->render($templateName, ['this' => $component]);
+	}
 }
