@@ -40,7 +40,7 @@ Done! Now render it wherever you want:
 
 Enjoy your new component!
 
-![Example of the AlertComponent](https://github.com/symfony/ux-twig-component/blob/main/alert-example.png?raw=true)
+![Example of the AlertComponent](https://github.com/symfony/ux-twig-component/blob/2.x/alert-example.png)
 
 This brings the familiar "component" system from client-side frameworks
 into Symfony. Combine this with [Live Components](https://github.com/symfony/ux-live-component),
