@@ -352,11 +352,11 @@ final class ComponentExtensionTest extends KernelTestCase
         // Not AlpineJS
         yield ['z-click="count++"', true];
         yield ['z-on:click="count++"', false]; // Nested
-        
+
         // Stencil
         yield ['onClick="count++"', true];
         yield ['@onClick="count++"', true];
-        
+
         // VueJs
         yield ['v-model="message"', true];
         yield ['v-bind:id="dynamicId"', true];

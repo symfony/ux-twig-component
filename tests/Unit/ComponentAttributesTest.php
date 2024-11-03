@@ -258,7 +258,7 @@ final class ComponentAttributesTest extends TestCase
         $this->assertSame(' class="baz"', (string) $attributes->nested('title')->nested('span'));
         $this->assertSame('', (string) $attributes->nested('invalid'));
     }
-    
+
     public function testPrefixedAttributes(): void
     {
         $attributes = new ComponentAttributes([
