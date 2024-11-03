@@ -44,7 +44,8 @@ final class ComponentAttributes implements \Stringable, \IteratorAggregate, \Cou
             ),
             function (string $carry, string $key) {
                 if (
-                    preg_match(self::NESTED_REGEX, $key)
+                    str_contains($key, ':')
+                    && preg_match(self::NESTED_REGEX, $key)
                     && !preg_match(self::ALPINE_REGEX, $key)
                     && !preg_match(self::VUE_REGEX, $key)
                 ) {
