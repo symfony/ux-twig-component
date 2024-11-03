@@ -222,7 +222,10 @@ final class ComponentAttributes implements \Stringable, \IteratorAggregate, \Cou
         $attributes = [];
 
         foreach ($this->attributes as $key => $value) {
-            if (preg_match(self::NESTED_REGEX, $key, $matches) && $namespace === $matches[1]) {
+            if (
+                str_contains($key, ':')
+                && preg_match(self::NESTED_REGEX, $key, $matches) && $namespace === $matches[1]
+            ) {
                 $attributes[$matches[2]] = $value;
             }
         }
