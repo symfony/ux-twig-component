@@ -22,6 +22,8 @@ use Symfony\WebpackEncoreBundle\Dto\AbstractStimulusDto;
 final class ComponentAttributes implements \Stringable, \IteratorAggregate, \Countable
 {
     private const NESTED_REGEX = '#^([\w-]+):(.+)$#';
+    private const ALPINE_REGEX = '#^x-([a-z]+):[^:]+$#';
+    private const VUE_REGEX = '#^v-([a-z]+):[^:]+$#';
 
     /** @var array<string,true> */
     private array $rendered = [];
@@ -41,7 +43,11 @@ final class ComponentAttributes implements \Stringable, \IteratorAggregate, \Cou
                 fn (string $key) => !isset($this->rendered[$key])
             ),
             function (string $carry, string $key) {
-                if (preg_match(self::NESTED_REGEX, $key)) {
+                if (
+                    preg_match(self::NESTED_REGEX, $key)
+                    && !preg_match(self::ALPINE_REGEX, $key)
+                    && !preg_match(self::VUE_REGEX, $key)
+                ) {
                     return $carry;
                 }
 

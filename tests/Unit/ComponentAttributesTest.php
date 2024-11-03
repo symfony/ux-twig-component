@@ -258,6 +258,19 @@ final class ComponentAttributesTest extends TestCase
         $this->assertSame(' class="baz"', (string) $attributes->nested('title')->nested('span'));
         $this->assertSame('', (string) $attributes->nested('invalid'));
     }
+    
+    public function testPrefixedAttributes(): void
+    {
+        $attributes = new ComponentAttributes([
+            'x-click' => 'x+',
+            'title:x-click' => 'title:x+',
+        ]);
+
+        $this->assertSame(' x-click="x+"', (string) $attributes);
+        $this->assertSame(' x-click="title:x+"', (string) $attributes->nested('title'));
+        $this->assertSame('', (string) $attributes->nested('title')->nested('span'));
+        $this->assertSame('', (string) $attributes->nested('invalid'));
+    }
 
     public function testConvertTrueAriaAttributeValue(): void
     {

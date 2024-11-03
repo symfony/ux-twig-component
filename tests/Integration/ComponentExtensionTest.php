@@ -316,6 +316,58 @@ final class ComponentExtensionTest extends KernelTestCase
         );
     }
 
+    /**
+     * @dataProvider providePrefixedAttributesCases
+     */
+    public function testRenderPrefixedAttributes(string $attributes, bool $expectContains): void
+    {
+        /** @var Environment $twig */
+        $twig = self::getContainer()->get(Environment::class);
+        $template = $twig->createTemplate(\sprintf('<twig:PrefixedAttributes %s/>', $attributes));
+
+        if ($expectContains) {
+            self::assertStringContainsString($attributes, trim($template->render()));
+
+            return;
+        }
+
+        self::assertStringNotContainsString($attributes, trim($template->render()));
+    }
+
+    /**
+     * @return iterable<array{0: string, 1: bool}>
+     */
+    public static function providePrefixedAttributesCases(): iterable
+    {
+        // General
+        yield ['x:men', false]; // Nested
+        yield ['x:men="u"', false];  // Nested
+        yield ['x-men', true];
+        yield ['x-men="u"', true];
+
+        // AlpineJS
+        yield ['x-click="count++"', true];
+        yield ['x-on:click="count++"', true];
+        yield ['@click="open"', true];
+        // Not AlpineJS
+        yield ['z-click="count++"', true];
+        yield ['z-on:click="count++"', false]; // Nested
+        
+        // Stencil
+        yield ['onClick="count++"', true];
+        yield ['@onClick="count++"', true];
+        
+        // VueJs
+        yield ['v-model="message"', true];
+        yield ['v-bind:id="dynamicId"', true];
+        yield ['v-bind:id', true];
+        yield ['@submit.prevent="onSubmit"', true];
+        // Not VueJs
+        yield ['z-model="message"', true];
+        yield ['z-bind:id="dynamicId"', false]; // Nested
+        yield ['z-bind:id', false]; // Nested
+    }
+
     public function testRenderingHtmlSyntaxComponentWithNestedAttributes(): void
     {
         $output = self::getContainer()
