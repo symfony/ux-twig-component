@@ -182,12 +182,12 @@ EOF
             ->name('*.html.twig')
         ;
         foreach ($finderTemplates as $template) {
-            $component = str_replace('/', ':', $template->getRelativePathname());
+            $component = str_replace(\DIRECTORY_SEPARATOR, ':', $template->getRelativePathname());
             $component = substr($component, 0, -10); // remove file extension ".html.twig"
             $path = $template->getPath();
 
             if ($template->getRelativePath()) {
-                $path = \rtrim(\substr($template->getPath(), 0, -1 * \strlen($template->getRelativePath())), '/');
+                $path = \rtrim(\substr($template->getPath(), 0, -1 * \strlen($template->getRelativePath())), \DIRECTORY_SEPARATOR);
             }
 
             if (isset($dirs[$path]) && FilesystemLoader::MAIN_NAMESPACE !== $dirs[$path]) {
