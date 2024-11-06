@@ -87,7 +87,7 @@ final class ComponentFactoryTest extends KernelTestCase
     public function testExceptionThrownIfRequiredMountParameterIsMissingFromPassedData(): void
     {
         $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('Symfony\UX\TwigComponent\Tests\Fixtures\Component\ComponentC::mount() has a required $propA parameter. Make sure this is passed or make give a default value.');
+        $this->expectExceptionMessage('Symfony\UX\TwigComponent\Tests\Fixtures\Component\ComponentC::mount() has a required $propA parameter. Make sure to pass it or give it a default value.');
 
         $this->createComponent('component_c');
     }
