@@ -187,7 +187,7 @@ EOF
             $path = $template->getPath();
 
             if ($template->getRelativePath()) {
-                $path = \rtrim(\substr($template->getPath(), 0, -1 * \strlen($template->getRelativePath())), \DIRECTORY_SEPARATOR);
++                $path = rtrim(substr($template->getPath(), 0, -1 * \strlen($template->getRelativePath())), \DIRECTORY_SEPARATOR);
             }
 
             if (isset($dirs[$path]) && FilesystemLoader::MAIN_NAMESPACE !== $dirs[$path]) {
