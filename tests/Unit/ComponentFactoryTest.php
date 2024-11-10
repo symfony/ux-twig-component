@@ -31,7 +31,8 @@ class ComponentFactoryTest extends TestCase
             $this->createMock(PropertyAccessorInterface::class),
             $this->createMock(EventDispatcherInterface::class),
             ['foo' => ['key' => 'foo', 'template' => 'bar.html.twig']],
-            []
+            [],
+            [],
         );
 
         $metadata = $factory->metadataFor('foo');
@@ -52,6 +53,7 @@ class ComponentFactoryTest extends TestCase
                 'foo' => ['key' => 'foo', 'template' => 'foo.html.twig'],
             ],
             ['Foo\\Bar' => 'bar'],
+            [],
         );
 
         $metadata = $factory->metadataFor('Foo\\Bar');
@@ -74,7 +76,8 @@ class ComponentFactoryTest extends TestCase
             $this->createMock(PropertyAccessorInterface::class),
             $this->createMock(EventDispatcherInterface::class),
             [],
-            []
+            [],
+            [],
         );
 
         $metadata = $factory->metadataFor('foo');

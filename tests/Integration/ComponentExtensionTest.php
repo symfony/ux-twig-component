@@ -283,7 +283,8 @@ final class ComponentExtensionTest extends KernelTestCase
     {
         $output = $this->renderComponent('NestedAttributes');
 
-        $this->assertSame(<<<HTML
+        $this->assertSame(
+            <<<HTML
             <main>
                 <div>
                     <span>
@@ -302,7 +303,8 @@ final class ComponentExtensionTest extends KernelTestCase
             'title:span:class' => 'baz',
         ]);
 
-        $this->assertSame(<<<HTML
+        $this->assertSame(
+            <<<HTML
             <main class="foo">
                 <div class="bar">
                     <span class="baz">
@@ -324,7 +326,8 @@ final class ComponentExtensionTest extends KernelTestCase
             ->render()
         ;
 
-        $this->assertSame(<<<HTML
+        $this->assertSame(
+            <<<HTML
             <main>
                 <div>
                     <span>
@@ -343,7 +346,8 @@ final class ComponentExtensionTest extends KernelTestCase
             ->render()
         ;
 
-        $this->assertSame(<<<HTML
+        $this->assertSame(
+            <<<HTML
             <main class="foo" @class="vex">
                 <div class="bar">
                     <span class="baz">

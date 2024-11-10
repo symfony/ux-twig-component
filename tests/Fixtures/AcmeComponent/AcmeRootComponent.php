@@ -7,5 +7,4 @@ use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 #[AsTwigComponent]
 class AcmeRootComponent
 {
-
 }

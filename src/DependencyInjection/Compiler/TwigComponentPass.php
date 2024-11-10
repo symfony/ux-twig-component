@@ -16,6 +16,8 @@ use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\UX\TwigComponent\Attribute\PostMount;
+use Symfony\UX\TwigComponent\Attribute\PreMount;
 
 /**
  * @author Kevin Bond <kevinbond@gmail.com>
@@ -68,7 +70,7 @@ final class TwigComponentPass implements CompilerPassInterface
                 $tag['service_id'] = $id;
                 $tag['class'] = $definition->getClass();
                 $tag['template'] = $tag['template'] ?? $this->calculateTemplate($tag['key'], $defaults);
-                $componentConfig[$tag['key']] = $tag;
+                $componentConfig[$tag['key']] = [...$tag, ...$this->getMountMethods($tag['class'])];
                 $componentReferences[$tag['key']] = new Reference($id);
                 $componentNames[] = $tag['key'];
                 $componentClassMap[$tag['class']] = $tag['key'];
@@ -108,5 +110,36 @@ final class TwigComponentPass implements CompilerPassInterface
         }
 
         return \sprintf('%s/%s.html.twig', rtrim($directory, '/'), str_replace(':', '/', $componentName));
+    }
+
+    /**
+     * @param class-string $component
+     *
+     * @return array{preMount: string[], mount: string[], postMount: string[]}
+     */
+    private function getMountMethods(string $component): array
+    {
+        $preMount = $mount = $postMount = [];
+        foreach ((new \ReflectionClass($component))->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+            foreach ($method->getAttributes(PreMount::class) as $attribute) {
+                $preMount[$method->getName()] = $attribute->newInstance()->priority;
+            }
+            foreach ($method->getAttributes(PostMount::class) as $attribute) {
+                $postMount[$method->getName()] = $attribute->newInstance()->priority;
+            }
+            if ('mount' === $method->getName()) {
+                $mount['mount'] = 0;
+            }
+        }
+
+        arsort($preMount, \SORT_NUMERIC);
+        arsort($mount, \SORT_NUMERIC);
+        arsort($postMount, \SORT_NUMERIC);
+
+        return [
+            'pre_mount' => array_keys($preMount),
+            'mount' => array_keys($mount),
+            'post_mount' => array_keys($postMount),
+        ];
     }
 }

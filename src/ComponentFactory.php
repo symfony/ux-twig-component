@@ -15,7 +15,6 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Contracts\Service\ResetInterface;
-use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\Event\PostMountEvent;
 use Symfony\UX\TwigComponent\Event\PreMountEvent;
 
@@ -26,13 +25,12 @@ use Symfony\UX\TwigComponent\Event\PreMountEvent;
  */
 final class ComponentFactory implements ResetInterface
 {
-    private static $mountMethods = [];
-    private static $preMountMethods = [];
-    private static $postMountMethods = [];
+    private static array $mountMethods = [];
 
     /**
      * @param array<string, array>        $config
      * @param array<class-string, string> $classMap
+     * @param array<class-string, array<string, string[]> $classMounts
      */
     public function __construct(
         private ComponentTemplateFinderInterface $componentTemplateFinder,
@@ -92,7 +90,7 @@ final class ComponentFactory implements ResetInterface
         $originalData = $data;
         $data = $this->preMount($component, $data, $componentMetadata);
 
-        $this->mount($component, $data);
+        $this->mount($component, $data, $componentMetadata);
 
         // set data that wasn't set in mount on the component directly
         foreach ($data as $property => $value) {
@@ -144,7 +142,7 @@ final class ComponentFactory implements ResetInterface
         return $this->components->get($metadata->getName());
     }
 
-    private function mount(object $component, array &$data): void
+    private function mount(object $component, array &$data, ComponentMetadata $componentMetadata): void
     {
         if ($component instanceof AnonymousComponent) {
             $component->mount($data);
@@ -152,22 +150,14 @@ final class ComponentFactory implements ResetInterface
             return;
         }
 
-        if (null === (self::$mountMethods[$component::class] ?? null)) {
-            try {
-                $mountMethod = self::$mountMethods[$component::class] = (new \ReflectionClass($component))->getMethod('mount');
-            } catch (\ReflectionException) {
-                self::$mountMethods[$component::class] = false;
-
-                return;
-            }
-        }
-
-        if (false === $mountMethod ??= self::$mountMethods[$component::class]) {
+        if (!$componentMetadata->getMounts()) {
             return;
         }
 
+        $mount = self::$mountMethods[$component::class] ??= (new \ReflectionClass($component))->getMethod('mount');
+
         $parameters = [];
-        foreach ($mountMethod->getParameters() as $refParameter) {
+        foreach ($mount->getParameters() as $refParameter) {
             if (\array_key_exists($name = $refParameter->getName(), $data)) {
                 $parameters[] = $data[$name];
                 // remove the data element so it isn't used to set the property directly.
@@ -175,11 +165,11 @@ final class ComponentFactory implements ResetInterface
             } elseif ($refParameter->isDefaultValueAvailable()) {
                 $parameters[] = $refParameter->getDefaultValue();
             } else {
-                throw new \LogicException(\sprintf('%s::mount() has a required $%s parameter. Make sure to pass it or give it a default value.', $component::class, $name));
+                throw new \LogicException(\sprintf('%s has a required $%s parameter. Make sure to pass it or give it a default value.', $component::class.'::mount()', $name));
             }
         }
 
-        $mountMethod->invoke($component, ...$parameters);
+        $mount->invoke($component, ...$parameters);
     }
 
     private function preMount(object $component, array $data, ComponentMetadata $componentMetadata): array
@@ -188,9 +178,8 @@ final class ComponentFactory implements ResetInterface
         $this->eventDispatcher->dispatch($event);
         $data = $event->getData();
 
-        $methods = self::$preMountMethods[$component::class] ??= AsTwigComponent::preMountMethods($component::class);
-        foreach ($methods as $method) {
-            if (null !== $newData = $method->invoke($component, $data)) {
+        foreach ($componentMetadata->getPreMounts() as $preMount) {
+            if (null !== $newData = $component->$preMount($data)) {
                 $data = $newData;
             }
         }
@@ -207,9 +196,8 @@ final class ComponentFactory implements ResetInterface
         $this->eventDispatcher->dispatch($event);
         $data = $event->getData();
 
-        $methods = self::$postMountMethods[$component::class] ??= AsTwigComponent::postMountMethods($component::class);
-        foreach ($methods as $method) {
-            if (null !== $newData = $method->invoke($component, $data)) {
+        foreach ($componentMetadata->getPostMounts() as $postMount) {
+            if (null !== $newData = $component->$postMount($data)) {
                 $data = $newData;
             }
         }
@@ -257,7 +245,5 @@ final class ComponentFactory implements ResetInterface
     public function reset(): void
     {
         self::$mountMethods = [];
-        self::$preMountMethods = [];
-        self::$postMountMethods = [];
     }
 }

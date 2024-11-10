@@ -77,46 +77,6 @@ class AsTwigComponent
 
     /**
      * @param object|class-string $component
-     *
-     * @internal
-     */
-    public static function mountMethod(object|string $component): ?\ReflectionMethod
-    {
-        foreach ((new \ReflectionClass($component))->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-            if ('mount' === $method->getName()) {
-                return $method;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @param object|class-string $component
-     *
-     * @return \ReflectionMethod[]
-     *
-     * @internal
-     */
-    public static function postMountMethods(object|string $component): array
-    {
-        return self::attributeMethodsByPriorityFor($component, PostMount::class);
-    }
-
-    /**
-     * @param object|class-string $component
-     *
-     * @return \ReflectionMethod[]
-     *
-     * @internal
-     */
-    public static function preMountMethods(object|string $component): array
-    {
-        return self::attributeMethodsByPriorityFor($component, PreMount::class);
-    }
-
-    /**
-     * @param object|class-string $component
      * @param class-string        $attributeClass
      *
      * @return \ReflectionMethod[]

@@ -67,6 +67,36 @@ final class ComponentMetadata
         return $this->get('attributes_var', 'attributes');
     }
 
+    /**
+     * @return list<string>
+     *
+     * @internal
+     */
+    public function getPreMounts(): array
+    {
+        return $this->get('pre_mount', []);
+    }
+
+    /**
+     * @return list<string>
+     *
+     * @internal
+     */
+    public function getMounts(): array
+    {
+        return $this->get('mount', []);
+    }
+
+    /**
+     * @return list<string>
+     *
+     * @internal
+     */
+    public function getPostMounts(): array
+    {
+        return $this->get('post_mount', []);
+    }
+
     public function get(string $key, mixed $default = null): mixed
     {
         return $this->config[$key] ?? $default;

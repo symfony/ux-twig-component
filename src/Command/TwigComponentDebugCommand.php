@@ -21,7 +21,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Finder\Finder;
-use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 use Symfony\UX\TwigComponent\ComponentFactory;
 use Symfony\UX\TwigComponent\ComponentMetadata;
@@ -214,7 +213,7 @@ EOF
         ]);
 
         // Anonymous Component
-        if (null === $metadata->get('class')) {
+        if ($metadata->isAnonymous()) {
             $table->addRows([
                 ['Type', '<comment>Anonymous</comment>'],
                 new TableSeparator(),
@@ -229,7 +228,7 @@ EOF
             ['Type', $metadata->get('live') ? '<info>Live</info>' : ''],
             new TableSeparator(),
             // ['Attributes Var', $metadata->get('attributes_var')],
-            ['Public Props', $metadata->get('expose_public_props') ? 'Yes' : 'No'],
+            ['Public Props', $metadata->isPublicPropsExposed() ? 'Yes' : 'No'],
             ['Properties', implode("\n", $this->getComponentProperties($metadata))],
         ]);
 
@@ -242,14 +241,15 @@ EOF
             return \sprintf('%s(%s)', $m->getName(), implode(', ', $params));
         };
         $hooks = [];
-        if ($method = AsTwigComponent::mountMethod($metadata->getClass())) {
-            $hooks[] = ['Mount', $logMethod($method)];
+        $reflector = new \ReflectionClass($metadata->getClass());
+        foreach ($metadata->getPreMounts() as $method) {
+            $hooks[] = ['PreMount', $logMethod($reflector->getMethod($method))];
         }
-        foreach (AsTwigComponent::preMountMethods($metadata->getClass()) as $method) {
-            $hooks[] = ['PreMount', $logMethod($method)];
+        foreach ($metadata->getMounts() as $method) {
+            $hooks[] = ['Mount', $logMethod($reflector->getMethod($method))];
         }
-        foreach (AsTwigComponent::postMountMethods($metadata->getClass()) as $method) {
-            $hooks[] = ['PostMount', $logMethod($method)];
+        foreach ($metadata->getPostMounts() as $method) {
+            $hooks[] = ['PostMount', $logMethod($reflector->getMethod($method))];
         }
         if ($hooks) {
             $table->addRows([
