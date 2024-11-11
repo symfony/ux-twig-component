@@ -12,6 +12,7 @@
 namespace Symfony\UX\TwigComponent;
 
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\Service\ResetInterface;
 use Symfony\UX\TwigComponent\Event\PostRenderEvent;
 use Symfony\UX\TwigComponent\Event\PreCreateForRenderEvent;
 use Symfony\UX\TwigComponent\Event\PreRenderEvent;
@@ -22,8 +23,10 @@ use Twig\Environment;
  *
  * @internal
  */
-final class ComponentRenderer implements ComponentRendererInterface
+final class ComponentRenderer implements ComponentRendererInterface, ResetInterface
 {
+    private array $templateClasses = [];
+
     public function __construct(
         private Environment $twig,
         private EventDispatcherInterface $dispatcher,
@@ -62,15 +65,15 @@ final class ComponentRenderer implements ComponentRendererInterface
         $variables = $event->getVariables();
         // see ComponentNode. When rendering an individual embedded component,
         // *not* through its parent, we need to set the parent template.
-        if ($event->getTemplateIndex()) {
+        if ($templateIndex = $event->getTemplateIndex()) {
             $variables['__parent__'] = $event->getParentTemplateForEmbedded();
         }
 
         try {
             return $this->twig->loadTemplate(
-                $this->twig->getTemplateClass($event->getTemplate()),
-                $event->getTemplate(),
-                $event->getTemplateIndex(),
+                $this->templateClasses[$template = $event->getTemplate()] ??= $this->twig->getTemplateClass($template),
+                $template,
+                $templateIndex,
             )->render($variables);
         } finally {
             $mounted = $this->componentStack->pop();
@@ -136,5 +139,10 @@ final class ComponentRenderer implements ComponentRendererInterface
         ]);
 
         return $event;
+    }
+
+    public function reset(): void
+    {
+        $this->templateClasses = [];
     }
 }

@@ -25,12 +25,11 @@ use Symfony\UX\TwigComponent\Event\PreMountEvent;
  */
 final class ComponentFactory implements ResetInterface
 {
-    private static array $mountMethods = [];
+    private array $mountMethods = [];
 
     /**
      * @param array<string, array>        $config
      * @param array<class-string, string> $classMap
-     * @param array<class-string, array<string, string[]> $classMounts
      */
     public function __construct(
         private ComponentTemplateFinderInterface $componentTemplateFinder,
@@ -38,7 +37,7 @@ final class ComponentFactory implements ResetInterface
         private PropertyAccessorInterface $propertyAccessor,
         private EventDispatcherInterface $eventDispatcher,
         private array $config,
-        private array $classMap,
+        private readonly array $classMap,
     ) {
     }
 
@@ -88,29 +87,29 @@ final class ComponentFactory implements ResetInterface
     public function mountFromObject(object $component, array $data, ComponentMetadata $componentMetadata): MountedComponent
     {
         $originalData = $data;
-        $data = $this->preMount($component, $data, $componentMetadata);
+        $event = $this->preMount($component, $data, $componentMetadata);
+        $data = $event->getData();
 
         $this->mount($component, $data, $componentMetadata);
 
-        // set data that wasn't set in mount on the component directly
-        foreach ($data as $property => $value) {
-            if ($this->propertyAccessor->isWritable($component, $property)) {
-                $this->propertyAccessor->setValue($component, $property, $value);
-
-                unset($data[$property]);
+        if (!$componentMetadata->isAnonymous()) {
+            // set data that wasn't set in mount on the component directly
+            foreach ($data as $property => $value) {
+                if ($this->propertyAccessor->isWritable($component, $property)) {
+                    $this->propertyAccessor->setValue($component, $property, $value);
+                    unset($data[$property]);
+                }
             }
         }
 
         $postMount = $this->postMount($component, $data, $componentMetadata);
-        $data = $postMount['data'];
-        $extraMetadata = $postMount['extraMetadata'];
+        $data = $postMount->getData();
 
         // create attributes from "attributes" key if exists
         $attributesVar = $componentMetadata->getAttributesVar();
         $attributes = $data[$attributesVar] ?? [];
         unset($data[$attributesVar]);
 
-        // ensure remaining data is scalar
         foreach ($data as $key => $value) {
             if ($value instanceof \Stringable) {
                 $data[$key] = (string) $value;
@@ -120,9 +119,9 @@ final class ComponentFactory implements ResetInterface
         return new MountedComponent(
             $componentMetadata->getName(),
             $component,
-            new ComponentAttributes(array_merge($attributes, $data)),
+            new ComponentAttributes([...$attributes, ...$data]),
             $originalData,
-            $extraMetadata,
+            $postMount->getExtraMetadata(),
         );
     }
 
@@ -154,7 +153,7 @@ final class ComponentFactory implements ResetInterface
             return;
         }
 
-        $mount = self::$mountMethods[$component::class] ??= (new \ReflectionClass($component))->getMethod('mount');
+        $mount = $this->mountMethods[$component::class] ??= (new \ReflectionClass($component))->getMethod('mount');
 
         $parameters = [];
         foreach ($mount->getParameters() as $refParameter) {
@@ -172,40 +171,34 @@ final class ComponentFactory implements ResetInterface
         $mount->invoke($component, ...$parameters);
     }
 
-    private function preMount(object $component, array $data, ComponentMetadata $componentMetadata): array
+    private function preMount(object $component, array $data, ComponentMetadata $componentMetadata): PreMountEvent
     {
         $event = new PreMountEvent($component, $data, $componentMetadata);
         $this->eventDispatcher->dispatch($event);
-        $data = $event->getData();
 
+        $data = $event->getData();
         foreach ($componentMetadata->getPreMounts() as $preMount) {
             if (null !== $newData = $component->$preMount($data)) {
-                $data = $newData;
+                $event->setData($data = $newData);
             }
         }
 
-        return $data;
+        return $event;
     }
 
-    /**
-     * @return array{data: array<string, mixed>, extraMetadata: array<string, mixed>}
-     */
-    private function postMount(object $component, array $data, ComponentMetadata $componentMetadata): array
+    private function postMount(object $component, array $data, ComponentMetadata $componentMetadata): PostMountEvent
     {
         $event = new PostMountEvent($component, $data, $componentMetadata);
         $this->eventDispatcher->dispatch($event);
-        $data = $event->getData();
 
+        $data = $event->getData();
         foreach ($componentMetadata->getPostMounts() as $postMount) {
             if (null !== $newData = $component->$postMount($data)) {
-                $data = $newData;
+                $event->setData($data = $newData);
             }
         }
 
-        return [
-            'data' => $data,
-            'extraMetadata' => $event->getExtraMetadata(),
-        ];
+        return $event;
     }
 
     /**
@@ -244,6 +237,6 @@ final class ComponentFactory implements ResetInterface
 
     public function reset(): void
     {
-        self::$mountMethods = [];
+        $this->mountMethods = [];
     }
 }
