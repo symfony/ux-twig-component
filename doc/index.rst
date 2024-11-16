@@ -122,6 +122,26 @@ and any other components by running:
 
 Take a moment to fist pump - then come back!
 
+You can also use the ``make`` commands to generate the component PHP and twig files :
+
+.. code-block:: terminal
+
+    $ php bin/console make:twig-component Alert
+
+If you want your component to reside in a sub directory like ``src/twig/Components/Alert/`` and make a specific component for a Danger alert you can run:
+
+.. code-block:: terminal
+
+    $ php bin/console make:twig-component Alert\\Danger
+
+Or:
+
+.. code-block:: terminal
+
+    $ php bin/console make:twig-component 'Alert\Danger'
+
+This wil render the php file at ``src\twig\Components\Alert\Danger.php`` and the twig file at ``templates\components\Alert\Danger.html.twig``
+
 .. _naming:
 
 Naming Your Component
