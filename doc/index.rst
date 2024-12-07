@@ -122,25 +122,14 @@ and any other components by running:
 
 Take a moment to fist pump - then come back!
 
-You can also use the ``make`` commands to generate the component PHP and twig files :
+.. tip
 
-.. code-block:: terminal
+    If you use the `Symfony MakerBundle`_, you can easily create a new component
+    with the ``make:twig-component`` command:
 
-    $ php bin/console make:twig-component Alert
+    .. code-block:: terminal
 
-If you want your component to reside in a sub directory like ``src/twig/Components/Alert/`` and make a specific component for a Danger alert you can run:
-
-.. code-block:: terminal
-
-    $ php bin/console make:twig-component Alert\\Danger
-
-Or:
-
-.. code-block:: terminal
-
-    $ php bin/console make:twig-component 'Alert\Danger'
-
-This wil render the php file at ``src\twig\Components\Alert\Danger.php`` and the twig file at ``templates\components\Alert\Danger.html.twig``
+        $ php bin/console make:twig-component Alert
 
 .. _naming:
 
@@ -317,22 +306,22 @@ prefix the attribute with ``:`` or use the normal ``{{ }}`` syntax:
     // pass object, array, or anything you imagine
     <twig:Alert :foo="{col: ['foo', 'oof']}" />
 
-Boolean props are converted using PHP's type juggling rules. The 
-string ``"false"`` is converted to the boolean ``true``. 
+Boolean props are converted using PHP's type juggling rules. The
+string ``"false"`` is converted to the boolean ``true``.
 
-To pass the boolean ``false``, you can pass a Twig expression 
+To pass the boolean ``false``, you can pass a Twig expression
 ``{{ false }}`` or use the dynamic syntax (with the ``:`` prefix):
 
 .. code-block:: html+twig
 
-    {# ❌ the string 'false' is converted to the boolean 'true' #}   
+    {# ❌ the string 'false' is converted to the boolean 'true' #}
     <twig:Alert message="..." withCloseButton="false" />
 
     {# ✅ use the 'false' boolean value #}
     <twig:Alert message="..." withCloseButton="{{ false }}" />
-    
+
     {# ✅ use the dynamic syntax #}
-    <twig:Alert message="..." :withCloseButton="false" />    
+    <twig:Alert message="..." :withCloseButton="false" />
 
 Don't forget that you can mix and match props with attributes that you
 want to render on the root element:
@@ -527,14 +516,14 @@ component use a ``PreMount`` hook::
     an error will be prompted, indicating that one or more options do not exist.
     To avoid this, use the ``ignoreUndefined()`` method with ``true``.
     See `ignore not defined options`_ for more info::
-   
+
         $resolver->setIgnoreUndefined(true);
-   
+
     The major drawback of this configuration is that the OptionsResolver will
     remove every non-defined option when resolving data. To maintain props that
     have not been defined within the OptionsResolver, combine the data from the
     hook with the resolved data::
-   
+
         return $resolver->resolve($data) + $data;
 
 The data returned from ``preMount()`` will be used as the props for mounting.
@@ -711,7 +700,7 @@ You can also add more, named blocks:
      </div>
 
 Render these in the normal way.
-     
+
 .. code-block:: html+twig
 
     <twig:Alert type="success">
@@ -1791,3 +1780,4 @@ https://symfony.com/doc/current/contributing/code/bc.html
 .. _`shadcn/ui`: https://ui.shadcn.com
 .. _`tales-from-a-dev/twig-tailwind-extra`: https://github.com/tales-from-a-dev/twig-tailwind-extra
 .. _`ignore not defined options`: https://symfony.com/doc/current/components/options_resolver.html#ignore-not-defined-options
+.. _`Symfony MakerBundle`: https://symfony.com/bundles/SymfonyMakerBundle/current/index.html
