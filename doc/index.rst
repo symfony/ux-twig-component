@@ -365,17 +365,26 @@ You can even give the block default content. See
 :ref:`Passing HTML to Components via Block <embedded-components>`
 for more info.
 
-The only limitation when defining contents inside a component using the HTML syntax
-is that you cannot import macros using the ``_self`` keyword. You must always use
-the full template path:
+Using macros in Components
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Defining contents inside a component works great, but what if you want to
+use a macro inside a component? Good news: you can! But there's a catch:
+you cannot import macros using the ``_self`` keyword. Instead, you need to
+use the full path of the template where the macro is defined:
 
 .. code-block:: html+twig
+
+    {% macro message_formatter(message) %}
+        <strong>{{ message }}</strong>
+    {% endmacro %}
 
     <twig:Alert>
         {# ❌ this won't work #}
         {% from _self import message_formatter %}
+        
         {# ✅ this works as expected #}
-        {% from 'some/path/template.html.twig' import message_formatter %}
+        {% from 'path/of/this/template.html.twig' import message_formatter %}
 
         {{ message_formatter('...') }}
     </twig:Alert>
