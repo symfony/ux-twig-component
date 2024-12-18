@@ -143,7 +143,7 @@ Naming Your Component
 
 To give your component a name, TwigComponent looks at the namespace(s)
 configured in :ref:`twig_component.yaml <default_config>` and finds the
-first match. If your have the recommended ``App\Twig\Components\``, then:
+first match. If you have the recommended ``App\Twig\Components\``, then:
 
 ========================================  ===================
 Component Class                            Component Name
