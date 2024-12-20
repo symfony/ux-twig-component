@@ -122,7 +122,7 @@ and any other components by running:
 
 Take a moment to fist pump - then come back!
 
-.. tip
+.. tip::
 
     If you use the `Symfony MakerBundle`_, you can easily create a new component
     with the ``make:twig-component`` command:
