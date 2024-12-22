@@ -376,5 +376,65 @@ final class TwigPreLexerTest extends TestCase
             '<twig:foobar bar="baz" {{ ...attr }}>content</twig:foobar>',
             '{% component \'foobar\' with { bar: \'baz\', ...attr } %}{% block content %}content{% endblock %}{% endcomponent %}',
         ];
+        yield 'component_with_comment_line' => [
+            "<twig:foo \n   # bar  \n />",
+            '{{ component(\'foo\') }}',
+        ];
+        yield 'component_with_comment_line_between_args' => [
+            <<<TWIG
+            <twig:foo
+                # bar
+                bar="baz"
+            />
+            TWIG,
+            '{{ component(\'foo\', { bar: \'baz\' }) }}',
+        ];
+        yield 'component_with_comment_lines_between_args' => [
+            <<<TWIG
+            <twig:foo
+                # comment
+                foo="foo"
+                # comment
+                bar="bar"
+            />
+            TWIG,
+            '{{ component(\'foo\', { foo: \'foo\', bar: \'bar\' }) }}',
+        ];
+        yield 'component_with_comment_line_containing_ending_tag' => [
+            <<<TWIG
+            <twig:foo
+                # comment /></twig:foo>
+                bar="bar"
+            />
+            TWIG,
+            '{{ component(\'foo\', { bar: \'bar\' }) }}',
+        ];
+        yield 'component_with_comment_line_in_argument_value' => [
+            <<<TWIG
+            <twig:foo
+                bar="# bar"
+            />
+            TWIG,
+            '{{ component(\'foo\', { bar: \'# bar\' }) }}',
+        ];
+        yield 'component_with_comment_line_in_argument_array_value_is_kept' => [
+            <<<TWIG
+            <twig:foo
+                bar="{{ {
+                    a: 'b',
+                    # comment
+                    c: 'd'
+                } }}"
+            />
+            TWIG,
+            // Twig will remove the comment, we don't need to remove it
+            <<<TWIG
+            {{ component('foo', { bar: ({
+                    a: 'b',
+                    # comment
+                    c: 'd'
+                }) }) }}
+            TWIG,
+        ];
     }
 }

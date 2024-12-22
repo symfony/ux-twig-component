@@ -233,6 +233,7 @@ class TwigPreLexer
             $isAttributeDynamic = false;
 
             // :someProp="dynamicVar"
+            $this->consumeWhitespace();
             if ($this->check(':')) {
                 $this->consume(':');
                 $isAttributeDynamic = true;
@@ -244,6 +245,7 @@ class TwigPreLexer
 
             // <twig:component someProp> -> someProp: true
             if (!$this->check('=')) {
+                $this->consumeWhitespace();
                 // don't allow "<twig:component :someProp>"
                 if ($isAttributeDynamic) {
                     throw new SyntaxError(\sprintf('Expected "=" after ":%s" when parsing the "<twig:%s" syntax.', $key, $componentName), $this->line);
@@ -332,6 +334,12 @@ class TwigPreLexer
         $whitespace = substr($this->input, $this->position, strspn($this->input, " \t\n\r\0\x0B", $this->position));
         $this->line += substr_count($whitespace, "\n");
         $this->position += \strlen($whitespace);
+
+        if ($this->check('#')) {
+            $this->consume('#');
+            $this->consumeUntil("\n");
+            $this->consumeWhitespace();
+        }
     }
 
     /**
