@@ -382,7 +382,7 @@ use the full path of the template where the macro is defined:
     <twig:Alert>
         {# ❌ this won't work #}
         {% from _self import message_formatter %}
-        
+
         {# ✅ this works as expected #}
         {% from 'path/of/this/template.html.twig' import message_formatter %}
 
@@ -1552,6 +1552,12 @@ are called additional times, the cached value is used.
 
     Computed methods only work for component methods with no required
     arguments.
+
+.. tip::
+
+    Ensure to not use the ``ExposeInTemplate`` attribute on a computed method,
+    otherwise the method will be called twice instead of only once, leading to
+    unnecessary overhead and potential performance issues.
 
 Events
 ------
