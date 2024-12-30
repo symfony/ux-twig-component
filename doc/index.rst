@@ -395,7 +395,7 @@ Fetching Services
 Let's create a more complex example: a "featured products" component.
 You *could* choose to pass an array of Product objects to the component
 and set those on a ``$products`` property. But instead, let's let the
-*component* to do the work of executing the query.
+*component* do the work of executing the query.
 
 How? Components are *services*, which means autowiring works like
 normal. This example assumes you have a ``Product`` Doctrine entity and
