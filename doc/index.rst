@@ -39,9 +39,9 @@ Done! Now render it wherever you want:
 Enjoy your new component!
 
 .. image:: images/alert-example.png
-   :alt: Example of the Alert Component
+    :alt: Example of the Alert Component
 
-   Example of the Alert Component
+    Example of the Alert Component
 
 This brings the familiar "component" system from client-side frameworks
 into Symfony. Combine this with `Live Components`_, to create
@@ -135,11 +135,6 @@ Take a moment to fist pump - then come back!
 
 Naming Your Component
 ~~~~~~~~~~~~~~~~~~~~~
-
-.. versionadded:: 2.8
-
-    Before 2.8, passing a name to ``AsTwigComponent`` was required. Now, the
-    name is optional and defaults to the class name.
 
 To give your component a name, TwigComponent looks at the namespace(s)
 configured in :ref:`twig_component.yaml <default_config>` and finds the
@@ -474,7 +469,7 @@ called ``mount()``::
         public string $message;
         public string $type = 'success';
 
-        public function mount(bool $isSuccess = true)
+        public function mount(bool $isSuccess = true): void
         {
             $this->type = $isSuccess ? 'success' : 'danger';
         }
@@ -560,10 +555,6 @@ The data returned from ``preMount()`` will be used as the props for mounting.
 
 PostMount Hook
 ~~~~~~~~~~~~~~
-
-.. versionadded:: 2.1
-
-    The ``PostMount`` hook was added in TwigComponents 2.1.
 
 After a component is instantiated and its data mounted, you can run extra
 code via the ``PostMount`` hook::
@@ -752,11 +743,11 @@ There is also a non-HTML syntax that can be used:
 Context / Variables Inside of Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The content inside of the ``<twig:{Component}>`` should be viewed as living in its own,
+The content inside of the ``<twig:Component>`` should be viewed as living in its own,
 independent template, which extends the component's template. This has a few interesting
 consequences.
 
-First, inside of ``<twig:{Component}>``, the ``this`` variable represents
+First, inside of ``<twig:Component>``, the ``this`` variable represents
 the component you're *now* rendering *and* you have access to all of *that*
 component's variables:
 
@@ -814,10 +805,12 @@ When overriding the ``alert_message`` block, you have access to the ``message`` 
 
 .. versionadded:: 2.13
 
-    The ability to refer to the scope of higher components via the ``outerScope`` variable was added in 2.13.
+    The ability to refer to the scope of higher components via the ``outerScope``
+    variable was added in 2.13.
 
-As mentioned before, variables from lower components are merged with those from upper components. When you need
-access to some properties or functions from higher components, that can be done via the ``outerScope...`` variable:
+As mentioned before, variables from lower components are merged with those from
+upper components. When you need access to some properties or functions from higher
+components, that can be done via the ``outerScope...`` variable:
 
 .. code-block:: twig
 
@@ -853,10 +846,6 @@ Remember though that the ``outerScope`` reference only starts once you're INSIDE
 
 Inheritance & Forwarding "Outer Blocks"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. versionadded:: 2.10
-
-    The ``outerBlocks`` variable was added in 2.10.
 
 The content inside a ``<twig:`` component tag should be viewed as living in
 its own, independent template, which *extends* the component's template. This means that
@@ -972,12 +961,13 @@ To add a custom `Stimulus controller`_ to your root component element:
 
     <div {{ attributes.defaults(stimulus_controller('my-controller', {someValue: 'foo'})) }}>
 
-.. versionadded:: 2.9
+.. note::
 
-    The ability to use ``stimulus_controller()`` with ``attributes.defaults()``
-    was added in TwigComponents 2.9 and requires ``symfony/stimulus-bundle``.
-    Previously, ``stimulus_controller()`` was passed to an ``attributes.add()``
-    method.
+    The ``stimulus_controller()`` function requires ``symfony/stimulus-bundle``.
+
+    .. code-block:: terminal
+
+        $ composer require symfony/stimulus-bundle
 
 .. note::
 
@@ -1186,21 +1176,16 @@ The nesting is recursive so you could potentially do something like this:
 Component with Complex Variants (CVA)
 -------------------------------------
 
-.. versionadded:: 2.16
-
-    The ``cva`` function was added in TwigComponents 2.16.
-
 .. deprecated:: 2.20
 
-    The ``cva`` function was deprecated in TwigComponents 2.20, and will be removed in 3.0.
-    The function is now provided by the ``twig/html-extra:^3.12`` package under the name `html_cva`_.
+    The ``cva`` function was deprecated in TwigComponents 2.20, and will be 
+    removed in 3.0. The function is now provided by the ``twig/html-extra:^3.12``
+    package under the name `html_cva`_.
 
-`CVA (Class Variant Authority)`_ is a concept from the JavaScript world and used
-by the well-known `shadcn/ui`_.
-CVA allows you to display a component with different variants (color, size, etc.),
-to create highly reusable and customizable components. This is powered by a ``cva()`` Twig
-function where you define ``base`` classes that should always be present and then different
-``variants`` and the corresponding classes:
+`CVA (Class Variant Authority)`_ originates from the JavaScript ecosystem. It
+enables reusable, customizable components by managing variants (e.g., color, size).
+The ``cva()`` Twig function defines ``base`` classes (always applied) and variant-specific
+classes:
 
 .. code-block:: html+twig
 
@@ -1231,52 +1216,33 @@ Then use the ``color`` and ``size`` variants to select the classes needed:
 
 .. code-block:: html+twig
 
-    {# index.html.twig #}
-    <twig:Alert color="red" size="lg">
-        <div>My content</div>
-    </twig:Alert>
-    // class="alert bg-red text-lg"
-
     <twig:Alert color="green" size="sm">
-        <div>My content</div>
+        ...
     </twig:Alert>
-    // class="alert bg-green text-sm"
-
-    <twig:Alert color="red" class="flex items-center justify-center">
-        <div>My content</div>
-    </twig:Alert>
-    // class="alert bg-red text-md flex items-center justify-center"
-
+    
+    {# will render as: #}
+    
+     <div class="alert bg-green text-sm">
+        ...
+    </div>
+    
 CVA and Tailwind CSS
 ~~~~~~~~~~~~~~~~~~~~
 
-CVA work perfectly with Tailwind CSS. The only drawback is that you can have class conflicts.
-To "merge" conflicting classes together and keep only the ones you need, use the
-``tailwind_merge()`` method from `tales-from-a-dev/twig-tailwind-extra`_
-with the ``cva()`` function:
-
-.. code-block:: terminal
-
-    $ composer require tales-from-a-dev/twig-tailwind-extra
+CVA integrates seamlessly with Tailwind CSS, though class conflicts may occur.
+Use the ``tailwind_merge()`` function from `tales-from-a-dev/twig-tailwind-extra`_ 
+to resolve conflicts:
 
 .. code-block:: html+twig
 
-    {# templates/components/Alert.html.twig #}
-    {% props color = 'blue', size = 'md' %}
-
-   {% set alert = cva({
-       // ...
-    }) %}
-
     <div class="{{ alert.apply({color, size}, attributes.render('class'))|tailwind_merge }}">
-         {% block content %}{% endblock %}
+        {% block content %}{% endblock %}
     </div>
 
 Compound Variants
 ~~~~~~~~~~~~~~~~~
 
-You can define compound variants. A compound variant is a variant that applies
-when multiple other variant conditions are met.
+Define compound variants for conditions involving multiple variants:
 
 .. code-block:: html+twig
 
@@ -1286,21 +1252,12 @@ when multiple other variant conditions are met.
     {% set alert = cva({
         base: 'alert',
         variants: {
-            color: {
-                blue: 'bg-blue',
-                red: 'bg-red',
-                green: 'bg-green',
-            },
-            size: {
-                sm: 'text-sm',
-                md: 'text-md',
-                lg: 'text-lg',
-            }
+           color: { red: 'bg-red' },
+           size: { lg: 'text-lg' }
         },
         compoundVariants: [{
-            // if color = red AND size = (md or lg), add the `font-bold` class
             color: ['red'],
-            size: ['md', 'lg'],
+            size: ['lg'],
             class: 'font-bold'
         }]
     }) %}
@@ -1312,19 +1269,14 @@ when multiple other variant conditions are met.
     {# index.html.twig #}
 
     <twig:Alert color="red" size="lg">
-        <div>My content</div>
+        ...
     </twig:Alert>
-    // class="alert bg-red text-lg font-bold"
-
-    <twig:Alert color="green" size="sm">
-        <div>My content</div>
-    </twig:Alert>
-    // class="alert bg-green text-sm"
-
-    <twig:Alert color="red" size="md">
-        <div>My content</div>
-    </twig:Alert>
-    // class="alert bg-green text-lg font-bold"
+    
+    {# will render as: #}
+    
+    <div class="alert bg-red text-lg font-bold">
+        ...
+    </div>
 
 Default Variants
 ~~~~~~~~~~~~~~~~
@@ -1334,42 +1286,33 @@ If no variants match, you can define a default set of classes to apply:
 .. code-block:: html+twig
 
     {# templates/components/Alert.html.twig #}
-    {% props color = 'blue', size = 'md' %}
-
     {% set alert = cva({
         base: 'alert',
         variants: {
             color: {
-                blue: 'bg-blue',
-                red: 'bg-red',
-                green: 'bg-green',
-            },
-            size: {
-                sm: 'text-sm',
-                md: 'text-md',
-                lg: 'text-lg',
+                red: 'bg-red'
             },
             rounded: {
                 sm: 'rounded-sm',
-                md: 'rounded-md',
-                lg: 'rounded-lg',
+                md: 'rounded-md'
             }
         },
         defaultVariants: {
-            rounded: 'md',
+            rounded: 'md'
         }
     }) %}
 
-    <div class="{{ alert.apply({color, size}) }}">
-         {% block content %}{% endblock %}
-    </div>
-
     {# index.html.twig #}
 
-    <twig:Alert color="red" size="lg">
-        <div>My content</div>
+    <twig:Alert color="red">
+        ...
     </twig:Alert>
-    // class="alert bg-red text-lg font-bold rounded-md"
+
+    {# will render as: #}
+
+    <div class="alert bg-red rounded-md">
+        ...
+    </div> 
 
 Test Helpers
 ------------
@@ -1600,20 +1543,12 @@ the twig template and twig variables before components are rendered::
 PostRenderEvent
 ~~~~~~~~~~~~~~~
 
-.. versionadded:: 2.5
-
-    The ``PostRenderEvent`` was added in TwigComponents 2.5.
-
 The ``PostRenderEvent`` is called after a component has finished
 rendering and contains the ``MountedComponent`` that was just
 rendered.
 
 PreCreateForRenderEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
-
-.. versionadded:: 2.5
-
-    The ``PreCreateForRenderEvent`` was added in TwigComponents 2.5.
 
 Subscribing to the ``PreCreateForRenderEvent`` gives the ability to be
 notified before a component object is created or hydrated, at the
@@ -1708,14 +1643,14 @@ If a component class matches multiple namespaces, the first matched will
 be used.
 
 3rd-Party Bundle
-~~~~~~~~~~~~~~~~
+----------------
 
 The flexibility of Twig Components is extended even further when integrated
 with third-party bundles, allowing developers to seamlessly include pre-built
 components into their projects.
 
 Anonymous Components
---------------------
+~~~~~~~~~~~~~~~~~~~~
 
 .. versionadded:: 2.20
 
@@ -1727,11 +1662,11 @@ can reference its components directly within your Twig templates:
 
 .. code-block:: html+twig
 
-    <twig:Shadcn:Button type="primary">
+    <twig:Acme:Button type="primary">
         Click me
-    </twig:Shadcn:Button>
+    </twig:Acme:Button>
 
-Here, the component name is composed of the bundle's Twig namespace ``Shadcn``, followed
+Here, the component name is composed of the bundle's Twig namespace ``Acme``, followed
 by a colon, and then the component path Button.
 
 .. note::
@@ -1740,8 +1675,8 @@ by a colon, and then the component path Button.
     ``bin/console debug:twig`` command.
 
 The component must be located in the bundle's ``templates/components/`` directory. For
-example, the component referenced as ``<twig:Shadcn:Button>`` should have its template
-file at ``templates/components/Button.html.twig`` within the Shadcn bundle.
+example, the component referenced as ``<twig:Acme:Button>`` should have its template
+file at ``templates/components/Button.html.twig`` within the Acme bundle.
 
 Debugging Components
 --------------------
@@ -1807,7 +1742,6 @@ https://symfony.com/doc/current/contributing/code/bc.html
 .. _`Stimulus controller`: https://symfony.com/bundles/StimulusBundle/current/index.html
 .. _`CVA (Class Variant Authority)`: https://cva.style/docs/getting-started/variants
 .. _`html_cva`: https://twig.symfony.com/doc/3.x/functions/html_cva.html
-.. _`shadcn/ui`: https://ui.shadcn.com
 .. _`tales-from-a-dev/twig-tailwind-extra`: https://github.com/tales-from-a-dev/twig-tailwind-extra
 .. _`ignore not defined options`: https://symfony.com/doc/current/components/options_resolver.html#ignore-not-defined-options
 .. _`Symfony MakerBundle`: https://symfony.com/bundles/SymfonyMakerBundle/current/index.html
