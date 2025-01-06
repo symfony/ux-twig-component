@@ -405,11 +405,8 @@ normal. This example assumes you have a ``Product`` Doctrine entity and
     #[AsTwigComponent]
     class FeaturedProducts
     {
-        private ProductRepository $productRepository;
-
-        public function __construct(ProductRepository $productRepository)
+        public function __construct(private ProductRepository $productRepository)
         {
-            $this->productRepository = $productRepository;
         }
 
         public function getProducts(): array
