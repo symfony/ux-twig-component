@@ -1342,7 +1342,7 @@ You can test how your component is mounted and rendered using the
                 data: ['foo' => 'bar'],
             );
 
-            $this->assertStringContainsString('bar', $rendered);
+            $this->assertStringContainsString('bar', (string) $rendered);
 
             // use the crawler
             $this->assertCount(5, $rendered->crawler()->filter('ul li'));
@@ -1360,7 +1360,7 @@ You can test how your component is mounted and rendered using the
                 ],
             );
 
-            $this->assertStringContainsString('bar', $rendered);
+            $this->assertStringContainsString('bar', (string) $rendered);
         }
     }
 
