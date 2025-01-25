@@ -112,7 +112,7 @@ final class ComponentNode extends Node implements NodeOutputInterface
             ->raw('), ')
             ->raw($this->getAttribute('only') ? '[]' : '$context')
             ->raw(', ')
-            ->string(TemplateNameParser::parse($this->getAttribute('embedded_template')))
+            ->string($this->getAttribute('embedded_template'))
             ->raw(', ')
             ->raw($this->getAttribute('embedded_index'))
             ->raw(");\n");

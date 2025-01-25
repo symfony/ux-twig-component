@@ -63,7 +63,7 @@ final class ComponentTokenParser extends AbstractTokenParser
         $this->parser->embedTemplate($module);
 
         // override the embedded index with a deterministic value, so it can be loaded in a controlled manner
-        $module->setAttribute('index', $this->generateEmbeddedTemplateIndex(TemplateNameParser::parse($stream->getSourceContext()->getName()), $token->getLine()));
+        $module->setAttribute('index', $this->generateEmbeddedTemplateIndex($stream->getSourceContext()->getName(), $token->getLine()));
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
