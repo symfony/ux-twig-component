@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2.25.0
+
+-   [SECURITY] Make `ComponentAttributes` responsible for attribute escaping ensuring
+    consistent and secure HTML output across all rendering contexts.
+-   Deprecate not passing an `HtmlAttributeEscaperInterface` to the `ComponentAttributes`
+    constructor.
+
 ## 2.20.0
 
 -  Add Anonymous Component support for 3rd-party bundles #2019
