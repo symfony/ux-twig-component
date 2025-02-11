@@ -14,6 +14,7 @@ namespace Symfony\UX\TwigComponent\Tests\Unit\EventListener;
 use PHPUnit\Framework\TestCase;
 use Symfony\UX\TwigComponent\ComponentAttributes;
 use Symfony\UX\TwigComponent\ComponentMetadata;
+use Symfony\UX\TwigComponent\Escaper\HtmlAttributeEscaperInterface;
 use Symfony\UX\TwigComponent\Event\PostRenderEvent;
 use Symfony\UX\TwigComponent\Event\PreRenderEvent;
 use Symfony\UX\TwigComponent\EventListener\TwigComponentLoggerListener;
@@ -28,8 +29,9 @@ class TwigComponentLoggerListenerTest extends TestCase
     {
         $logger = new TwigComponentLoggerListener();
         $this->assertSame([], $logger->getEvents());
+        $escaper = $this->createHtmlAttributeEscaper();
 
-        $mounted = new MountedComponent('foo', new \stdClass(), new ComponentAttributes([]));
+        $mounted = new MountedComponent('foo', new \stdClass(), new ComponentAttributes([], $escaper));
         $eventA = new PreRenderEvent($mounted, new ComponentMetadata(['template' => 'bar']), []);
         $logger->onPreRender($eventA);
         $eventB = new PostRenderEvent($mounted);
@@ -41,11 +43,27 @@ class TwigComponentLoggerListenerTest extends TestCase
     public function testLoggerReset(): void
     {
         $logger = new TwigComponentLoggerListener();
+        $escaper = $this->createHtmlAttributeEscaper();
 
-        $logger->onPreRender(new PreRenderEvent(new MountedComponent('foo', new \stdClass(), new ComponentAttributes([])), new ComponentMetadata(['template' => 'bar']), []));
+        $logger->onPreRender(new PreRenderEvent(new MountedComponent('foo', new \stdClass(), new ComponentAttributes([], $escaper)), new ComponentMetadata(['template' => 'bar']), []));
         $this->assertNotSame([], $logger->getEvents());
 
         $logger->reset();
         $this->assertSame([], $logger->getEvents());
+    }
+
+    private function createHtmlAttributeEscaper(): HtmlAttributeEscaperInterface
+    {
+        return new class implements HtmlAttributeEscaperInterface {
+            public function escapeName(string $name, string $charset = 'UTF-8'): string
+            {
+                return $name;
+            }
+
+            public function escapeValue(string $value, string $charset = 'UTF-8'): string
+            {
+                return $value;
+            }
+        };
     }
 }

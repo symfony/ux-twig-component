@@ -38,6 +38,7 @@ final class ComponentFactory implements ResetInterface
         private EventDispatcherInterface $eventDispatcher,
         private array $config,
         private readonly array $classMap,
+        private ComponentAttributesFactory $componentAttributesFactory,
     ) {
     }
 
@@ -119,7 +120,7 @@ final class ComponentFactory implements ResetInterface
         return new MountedComponent(
             $componentMetadata->getName(),
             $component,
-            new ComponentAttributes([...$attributes, ...$data]),
+            $this->componentAttributesFactory->create([...$attributes, ...$data]),
             $originalData,
             $postMount->getExtraMetadata(),
         );

@@ -438,6 +438,44 @@ final class ComponentExtensionTest extends KernelTestCase
     }
 
     /**
+     * @dataProvider provideUnsafeAttributes
+     */
+    public function testHtmlSyntaxEscapesAttributeValues(string $input): void
+    {
+        $output = self::getContainer()->get(Environment::class)->render(
+            'anonymous_component_with_html_syntax.html.twig',
+            ['input' => $input]
+        );
+
+        $this->assertStringNotContainsString('<script', $output);
+        $this->assertStringContainsString('&lt;scr', $output);
+    }
+
+    /**
+     * @dataProvider provideUnsafeAttributes
+     */
+    public function testDynamicSyntaxEscapesAttributeValues(string $input): void
+    {
+        $output = self::getContainer()->get(Environment::class)->render(
+            'anonymous_component_with_dynamic_syntax.html.twig',
+            ['input' => $input]
+        );
+
+        $this->assertStringNotContainsString('<script', $output);
+        $this->assertStringContainsString('&lt;scr', $output);
+    }
+
+    public static function provideUnsafeAttributes(): iterable
+    {
+        return array_map(fn ($s) => (array) $s, [
+            '"><script>alert("XSS")</script>',
+            '\"><script>alert(\"XSS\")</script>',
+            "'><script>alert(\"XSS\")</script>",
+            "\'><script>alert(\"XSS\")</script>",
+        ]);
+    }
+
+    /**
      * @group legacy
      */
     public function testAnonymousComponentWithPropsOverwriteParentsProps(): void

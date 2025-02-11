@@ -31,7 +31,7 @@
         "symfony/deprecation-contracts": "^2.2|^3.0",
         "symfony/event-dispatcher": "^5.4|^6.0|^7.0",
         "symfony/property-access": "^5.4|^6.0|^7.0",
-        "twig/twig": "^3.8"
+        "twig/twig": "^3.10.3"
     },
     "require-dev": {
         "symfony/console": "^5.4|^6.0|^7.0",
