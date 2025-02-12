@@ -118,6 +118,14 @@ final class ComponentTokenParser extends AbstractTokenParser
             $this->lineAndFileCounts[$fileAndLine] = 0;
         }
 
-        return crc32($fileAndLine).++$this->lineAndFileCounts[$fileAndLine];
+        $index = crc32($fileAndLine).++$this->lineAndFileCounts[$fileAndLine];
+
+        if (4 === \PHP_INT_SIZE) {
+            // On 32-bit PHP, the index can be negative or greater than PHP_INT_MAX
+            // we need to convert it to a positive 32-bit integer
+            $index = fmod(abs($index), \PHP_INT_MAX) + 1;
+        }
+
+        return (int) $index;
     }
 }
