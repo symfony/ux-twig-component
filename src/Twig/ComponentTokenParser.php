@@ -33,7 +33,12 @@ final class ComponentTokenParser extends AbstractTokenParser
     public function parse(Token $token): Node
     {
         $stream = $this->parser->getStream();
-        $componentName = $this->componentName($this->parser->getExpressionParser()->parseExpression());
+        if (method_exists($this->parser, 'parseExpression')) {
+            // Since Twig 3.21
+            $componentName = $this->componentName($this->parser->parseExpression());
+        } else {
+            $componentName = $this->componentName($this->parser->getExpressionParser()->parseExpression());
+        }
 
         [$propsExpression, $only] = $this->parseArguments();
 
@@ -98,7 +103,12 @@ final class ComponentTokenParser extends AbstractTokenParser
         $variables = null;
 
         if ($stream->nextIf(Token::NAME_TYPE, 'with')) {
-            $variables = $this->parser->getExpressionParser()->parseExpression();
+            if (method_exists($this->parser, 'parseExpression')) {
+                // Since Twig 3.21
+                $variables = $this->parser->parseExpression();
+            } else {
+                $variables = $this->parser->getExpressionParser()->parseExpression();
+            }
         }
 
         $only = false;

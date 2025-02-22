@@ -33,7 +33,12 @@ class PropsTokenParser extends AbstractTokenParser
             $name = $stream->expect(Token::NAME_TYPE)->getValue();
 
             if ($stream->nextIf(Token::OPERATOR_TYPE, '=')) {
-                $values[$name] = $parser->getExpressionParser()->parseExpression();
+                if (method_exists($parser, 'parseExpression')) {
+                    // Since Twig 3.21
+                    $values[$name] = $parser->parseExpression();
+                } else {
+                    $values[$name] = $parser->getExpressionParser()->parseExpression();
+                }
             }
 
             $names[] = $name;
