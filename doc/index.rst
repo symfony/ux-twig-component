@@ -498,6 +498,7 @@ If you need to modify/validate data before it's *mounted* on the
 component use a ``PreMount`` hook::
 
     // src/Twig/Components/Alert.php
+    use Symfony\Component\OptionsResolver\OptionsResolver;
     use Symfony\UX\TwigComponent\Attribute\PreMount;
     // ...
 
