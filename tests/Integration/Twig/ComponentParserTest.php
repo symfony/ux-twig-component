@@ -13,6 +13,7 @@ namespace Symfony\UX\TwigComponent\Tests\Integration\Twig;
 
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Twig\Environment;
+use Twig\Error\SyntaxError;
 use Twig\Loader\ArrayLoader;
 use Twig\TemplateWrapper;
 
@@ -28,12 +29,12 @@ final class ComponentParserTest extends KernelTestCase
      */
     public function testAcceptTwigComponentTagWithValidComponentName(string $name): void
     {
-        $environment = self::createEnvironment();
+        $environment = $this->createEnvironment();
         $source = str_replace('XXX', $name, "{% component 'XXX' %}{% endcomponent %}");
 
         $template = $environment->createTemplate($source);
 
-        self::assertInstanceOf(TemplateWrapper::class, $template);
+        $this->assertInstanceOf(TemplateWrapper::class, $template);
     }
 
     /**
@@ -41,12 +42,12 @@ final class ComponentParserTest extends KernelTestCase
      */
     public function testAcceptHtmlComponentTagWithValidComponentName(string $name): void
     {
-        $environment = self::createEnvironment();
+        $environment = $this->createEnvironment();
         $source = \sprintf('<twig:%s></twig:%s>', $name, $name);
 
         $template = $environment->createTemplate($source);
 
-        self::assertInstanceOf(TemplateWrapper::class, $template);
+        $this->assertInstanceOf(TemplateWrapper::class, $template);
     }
 
     /**
@@ -54,12 +55,24 @@ final class ComponentParserTest extends KernelTestCase
      */
     public function testAcceptHtmlSelfClosingComponentTagWithValidComponentName(string $name): void
     {
-        $environment = self::createEnvironment();
+        $environment = $this->createEnvironment();
         $source = \sprintf('<twig:%s />', $name);
 
         $template = $environment->createTemplate($source);
 
-        self::assertInstanceOf(TemplateWrapper::class, $template);
+        $this->assertInstanceOf(TemplateWrapper::class, $template);
+    }
+
+    public function testItThrowsWhenComponentNameCannotBeParsed(): void
+    {
+        $environment = $this->createEnvironment();
+        $source = '{% component [] %}{% endcomponent %}';
+
+        $this->expectException(SyntaxError::class);
+        $this->expectExceptionMessage('Could not parse component name in "foo.html.twig');
+        $this->expectExceptionMessage(')" at line 1.');
+
+        $environment->createTemplate($source, 'foo.html.twig');
     }
 
     public static function provideValidComponentNames(): iterable
