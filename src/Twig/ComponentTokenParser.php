@@ -12,6 +12,7 @@
 namespace Symfony\UX\TwigComponent\Twig;
 
 use Symfony\UX\TwigComponent\BlockStack;
+use Twig\Error\SyntaxError;
 use Twig\Node\Expression\AbstractExpression;
 use Twig\Node\Expression\ArrayExpression;
 use Twig\Node\Expression\ConstantExpression;
@@ -33,11 +34,16 @@ final class ComponentTokenParser extends AbstractTokenParser
     public function parse(Token $token): Node
     {
         $stream = $this->parser->getStream();
+
         if (method_exists($this->parser, 'parseExpression')) {
             // Since Twig 3.21
             $componentName = $this->componentName($this->parser->parseExpression());
         } else {
             $componentName = $this->componentName($this->parser->getExpressionParser()->parseExpression());
+        }
+
+        if (null === $componentName) {
+            throw new SyntaxError('Could not parse component name.', $stream->getCurrent()->getLine(), $stream->getSourceContext());
         }
 
         [$propsExpression, $only] = $this->parseArguments();
@@ -80,7 +86,7 @@ final class ComponentTokenParser extends AbstractTokenParser
         return 'component';
     }
 
-    private function componentName(AbstractExpression $expression): string
+    private function componentName(AbstractExpression $expression): ?string
     {
         if ($expression instanceof ConstantExpression) { // using {% component 'name' %}
             return $expression->getAttribute('value');
@@ -90,7 +96,7 @@ final class ComponentTokenParser extends AbstractTokenParser
             return $expression->getAttribute('name');
         }
 
-        throw new \LogicException('Could not parse component name.');
+        return null;
     }
 
     /**
