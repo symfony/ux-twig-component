@@ -1,11 +1,17 @@
 # CHANGELOG
 
+## 2.25.1
+
+-   [SECURITY] `ComponentAttributes` now requires a `Twig\Runtime\EscaperRuntime`
+    instance as second argument
+-   Remove `HtmlAttributeEscaperInterface`, `TwigHtmlAttributeEscaper` and `ComponentAttributesFactory`
+
 ## 2.25.0
 
 -   [SECURITY] Make `ComponentAttributes` responsible for attribute escaping ensuring
-    consistent and secure HTML output across all rendering contexts.
+    consistent and secure HTML output across all rendering contexts
 -   Deprecate not passing an `HtmlAttributeEscaperInterface` to the `ComponentAttributes`
-    constructor.
+    constructor
 
 ## 2.20.0
 

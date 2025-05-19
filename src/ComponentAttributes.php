@@ -12,8 +12,8 @@
 namespace Symfony\UX\TwigComponent;
 
 use Symfony\UX\StimulusBundle\Dto\StimulusAttributes;
-use Symfony\UX\TwigComponent\Escaper\HtmlAttributeEscaperInterface;
 use Symfony\WebpackEncoreBundle\Dto\AbstractStimulusDto;
+use Twig\Runtime\EscaperRuntime;
 
 /**
  * @author Kevin Bond <kevinbond@gmail.com>
@@ -29,19 +29,13 @@ final class ComponentAttributes implements \Stringable, \IteratorAggregate, \Cou
     /** @var array<string,true> */
     private array $rendered = [];
 
-    private readonly ?HtmlAttributeEscaperInterface $escaper;
-
     /**
      * @param array<string, string|bool> $attributes
      */
     public function __construct(
         private array $attributes,
-        ?HtmlAttributeEscaperInterface $escaper = null,
+        private readonly EscaperRuntime $escaper,
     ) {
-        // Third argument used as internal flag to prevent multiple deprecations
-        if ((null === $this->escaper = $escaper) && 3 > func_num_args()) {
-            trigger_deprecation('symfony/ux-twig-component', '2.24', 'Not passing an "%s" to "%s" is deprecated and will throw in 3.0.', HtmlAttributeEscaperInterface::class, self::class);
-        }
     }
 
     public function __toString(): string
@@ -87,13 +81,17 @@ final class ComponentAttributes implements \Stringable, \IteratorAggregate, \Cou
             // - special syntax names (Vue.js, Svelte, Alpine.js, ...)
             //      v-*, x-*, @*, :*
             if (!ctype_alpha(str_replace(['-', '_', ':', '@', '.'], '', $key))) {
-                $key = $this->escaper?->escapeName($key) ?? $key;
+                $key = (string) $this->escaper->escape($key, 'html_attr');
             }
 
             if (true === $value) {
                 $attributes .= ' '.$key;
             } else {
-                $attributes .= ' '.\sprintf('%s="%s"', $key, $this->escaper?->escapeValue($value) ?? $value);
+                if (!ctype_alnum(str_replace(['-', '_'], '', $value))) {
+                    $value = $this->escaper->escape($value, 'html');
+                }
+
+                $attributes .= ' '.\sprintf('%s="%s"', $key, $value);
             }
         }
 
@@ -167,7 +165,7 @@ final class ComponentAttributes implements \Stringable, \IteratorAggregate, \Cou
             unset($attributes[$attribute]);
         }
 
-        return new self($attributes, $this->escaper, true);
+        return new self($attributes, $this->escaper);
     }
 
     /**
@@ -183,7 +181,7 @@ final class ComponentAttributes implements \Stringable, \IteratorAggregate, \Cou
             }
         }
 
-        return new self($attributes, $this->escaper, true);
+        return new self($attributes, $this->escaper);
     }
 
     /**
@@ -221,7 +219,7 @@ final class ComponentAttributes implements \Stringable, \IteratorAggregate, \Cou
         )));
         unset($controllersAttributes['data-controller']);
 
-        $clone = new self($attributes, $this->escaper, true);
+        $clone = new self($attributes, $this->escaper);
 
         // add the remaining attributes for values/classes
         return $clone->defaults($controllersAttributes);
@@ -233,7 +231,7 @@ final class ComponentAttributes implements \Stringable, \IteratorAggregate, \Cou
 
         unset($attributes[$key]);
 
-        return new self($attributes, $this->escaper, true);
+        return new self($attributes, $this->escaper);
     }
 
     public function nested(string $namespace): self
@@ -249,7 +247,7 @@ final class ComponentAttributes implements \Stringable, \IteratorAggregate, \Cou
             }
         }
 
-        return new self($attributes, $this->escaper, true);
+        return new self($attributes, $this->escaper);
     }
 
     public function getIterator(): \Traversable
