@@ -15,10 +15,10 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\PhpUnit\ExpectDeprecationTrait;
 use Symfony\UX\StimulusBundle\Dto\StimulusAttributes;
 use Symfony\UX\TwigComponent\ComponentAttributes;
-use Symfony\UX\TwigComponent\Escaper\HtmlAttributeEscaperInterface;
 use Symfony\WebpackEncoreBundle\Dto\AbstractStimulusDto;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;
+use Twig\Runtime\EscaperRuntime;
 
 /**
  * @author Kevin Bond <kevinbond@gmail.com>
@@ -39,14 +39,14 @@ final class ComponentAttributesTest extends TestCase
             },
             'value' => '',
             'autofocus' => true,
-        ], $this->createEscaper());
+        ], new EscaperRuntime());
 
         $this->assertSame(' class="foo" style="color:black;" value="" autofocus', (string) $attributes);
     }
 
     public function testCanSetDefaults(): void
     {
-        $attributes = new ComponentAttributes(['class' => 'foo', 'style' => 'color:black;'], $this->createEscaper());
+        $attributes = new ComponentAttributes(['class' => 'foo', 'style' => 'color:black;'], new EscaperRuntime());
 
         $this->assertSame(
             ['class' => 'bar foo', 'style' => 'color:black;'],
@@ -57,19 +57,19 @@ final class ComponentAttributesTest extends TestCase
             (string) $attributes->defaults(['class' => 'bar', 'style' => 'font-size: 10;'])
         );
 
-        $this->assertSame(['class' => 'foo'], (new ComponentAttributes([], $this->createEscaper()))->defaults(['class' => 'foo'])->all());
+        $this->assertSame(['class' => 'foo'], (new ComponentAttributes([], new EscaperRuntime()))->defaults(['class' => 'foo'])->all());
     }
 
     public function testCanGetOnly(): void
     {
-        $attributes = new ComponentAttributes(['class' => 'foo', 'style' => 'color:black;'], $this->createEscaper());
+        $attributes = new ComponentAttributes(['class' => 'foo', 'style' => 'color:black;'], new EscaperRuntime());
 
         $this->assertSame(['class' => 'foo'], $attributes->only('class')->all());
     }
 
     public function testCanGetWithout(): void
     {
-        $attributes = new ComponentAttributes(['class' => 'foo', 'style' => 'color:black;'], $this->createEscaper());
+        $attributes = new ComponentAttributes(['class' => 'foo', 'style' => 'color:black;'], new EscaperRuntime());
 
         $this->assertSame(['class' => 'foo'], $attributes->without('style')->all());
     }
@@ -83,7 +83,7 @@ final class ComponentAttributesTest extends TestCase
             'class' => 'foo',
             'data-controller' => 'live',
             'data-live-data-value' => '{}',
-        ], $this->createEscaper());
+        ], new EscaperRuntime());
 
         $controllerDto = $this->createMock(AbstractStimulusDto::class);
         $controllerDto->expects(self::once())
@@ -110,7 +110,7 @@ final class ComponentAttributesTest extends TestCase
     {
         $attributes = new ComponentAttributes([
             'class' => 'foo',
-        ], $this->createEscaper());
+        ], new EscaperRuntime());
 
         $controllerDto = $this->createMock(AbstractStimulusDto::class);
         $controllerDto->expects(self::once())
@@ -140,7 +140,7 @@ final class ComponentAttributesTest extends TestCase
             'class' => 'foo',
             'data-controller' => 'live',
             'data-live-data-value' => '{}',
-        ], $this->createEscaper());
+        ], new EscaperRuntime());
 
         $stimulusAttributes = new StimulusAttributes(new Environment(new ArrayLoader()));
         $stimulusAttributes->addController('foo', ['name' => 'ryan', 'some_array' => ['a', 'b']]);
@@ -165,7 +165,7 @@ final class ComponentAttributesTest extends TestCase
         $attributes = new ComponentAttributes([
             'class' => 'foo',
             'data-action' => 'live#foo',
-        ], $this->createEscaper());
+        ], new EscaperRuntime());
 
         $stimulusAttributes = new StimulusAttributes(new Environment(new ArrayLoader()));
         $stimulusAttributes->addAction('foo', 'barMethod');
@@ -179,12 +179,12 @@ final class ComponentAttributesTest extends TestCase
 
     public function testBooleanBehaviour(): void
     {
-        $attributes = new ComponentAttributes(['disabled' => true], $this->createEscaper());
+        $attributes = new ComponentAttributes(['disabled' => true], new EscaperRuntime());
 
         $this->assertSame(['disabled' => true], $attributes->all());
         $this->assertSame(' disabled', (string) $attributes);
 
-        $attributes = new ComponentAttributes(['disabled' => false], $this->createEscaper());
+        $attributes = new ComponentAttributes(['disabled' => false], new EscaperRuntime());
 
         $this->assertSame(['disabled' => false], $attributes->all());
         $this->assertSame('', (string) $attributes);
@@ -195,7 +195,7 @@ final class ComponentAttributesTest extends TestCase
      */
     public function testNullBehaviour(): void
     {
-        $attributes = new ComponentAttributes(['disabled' => null], $this->createEscaper());
+        $attributes = new ComponentAttributes(['disabled' => null], new EscaperRuntime());
 
         $this->assertSame(['disabled' => null], $attributes->all());
         $this->assertSame(' disabled', (string) $attributes);
@@ -203,7 +203,7 @@ final class ComponentAttributesTest extends TestCase
 
     public function testIsTraversableAndCountable(): void
     {
-        $attributes = new ComponentAttributes(['foo' => 'bar'], $this->createEscaper());
+        $attributes = new ComponentAttributes(['foo' => 'bar'], new EscaperRuntime());
 
         $this->assertSame($attributes->all(), iterator_to_array($attributes));
         $this->assertCount(1, $attributes);
@@ -211,7 +211,7 @@ final class ComponentAttributesTest extends TestCase
 
     public function testRenderSingleAttribute(): void
     {
-        $attributes = new ComponentAttributes(['attr1' => 'value1', 'attr2' => 'value2'], $this->createEscaper());
+        $attributes = new ComponentAttributes(['attr1' => 'value1', 'attr2' => 'value2'], new EscaperRuntime());
 
         $this->assertSame('value1', $attributes->render('attr1'));
         $this->assertNull($attributes->render('attr3'));
@@ -227,7 +227,7 @@ final class ComponentAttributesTest extends TestCase
                 }
             },
             'attr2' => 'value2',
-        ], $this->createEscaper());
+        ], new EscaperRuntime());
 
         $this->assertSame('value1', $attributes->render('attr1'));
         $this->assertSame(' attr2="value2"', (string) $attributes);
@@ -235,7 +235,7 @@ final class ComponentAttributesTest extends TestCase
 
     public function testCannotRenderNonStringAttribute(): void
     {
-        $attributes = new ComponentAttributes(['attr1' => false], $this->createEscaper());
+        $attributes = new ComponentAttributes(['attr1' => false], new EscaperRuntime());
 
         $this->expectException(\LogicException::class);
 
@@ -244,7 +244,7 @@ final class ComponentAttributesTest extends TestCase
 
     public function testCanCheckIfAttributeExists(): void
     {
-        $attributes = new ComponentAttributes(['foo' => 'bar'], $this->createEscaper());
+        $attributes = new ComponentAttributes(['foo' => 'bar'], new EscaperRuntime());
 
         $this->assertTrue($attributes->has('foo'));
     }
@@ -255,7 +255,7 @@ final class ComponentAttributesTest extends TestCase
             'class' => 'foo',
             'title:class' => 'bar',
             'title:span:class' => 'baz',
-        ], $this->createEscaper());
+        ], new EscaperRuntime());
 
         $this->assertSame(' class="foo"', (string) $attributes);
         $this->assertSame(' class="bar"', (string) $attributes->nested('title'));
@@ -268,7 +268,7 @@ final class ComponentAttributesTest extends TestCase
         $attributes = new ComponentAttributes([
             'x-click' => 'x+',
             'title:x-click' => 'title:x+',
-        ], $this->createEscaper());
+        ], new EscaperRuntime());
 
         $this->assertSame(' x-click="x+"', (string) $attributes);
         $this->assertSame(' x-click="title:x+"', (string) $attributes->nested('title'));
@@ -285,7 +285,7 @@ final class ComponentAttributesTest extends TestCase
             'aria-false' => 'false',
             'aria-foobar' => 'foobar',
             'aria-number' => '1',
-        ], $this->createEscaper());
+        ], new EscaperRuntime());
 
         $this->assertStringNotContainsString('aria-bar', (string) $attributes);
         $this->assertStringContainsString('aria-foo="true"', (string) $attributes);
@@ -309,7 +309,7 @@ final class ComponentAttributesTest extends TestCase
      */
     public function testAllowsSpecialSyntaxAttributeNames(string $name): void
     {
-        $attributes = new ComponentAttributes([$name => 'value'], $this->createEscaper());
+        $attributes = new ComponentAttributes([$name => 'value'], new EscaperRuntime());
 
         $this->assertSame(' '.$name.'="value"', (string) $attributes);
     }
@@ -323,48 +323,68 @@ final class ComponentAttributesTest extends TestCase
         yield ['x-on:click'];
     }
 
-    public function testTransmitsEscaper(): void
+    public function testThrowsTypeErrorWithoutEscaperRuntime(): void
     {
-        $escaper = new class implements HtmlAttributeEscaperInterface {
-            public function escapeName(string $name, string $charset = 'UTF-8'): string
-            {
-                return 'N('.$name.')';
-            }
-
-            public function escapeValue(string $value, string $charset = 'UTF-8'): string
-            {
-                return 'V('.$value.')';
-            }
-        };
-        $attributes = new ComponentAttributes(['f"oo' => 'b"ar', 'ke"y' => true], $escaper);
-
-        $this->assertSame('N(f"oo)="V(b"ar)" N(ke"y)', trim($attributes));
-        $this->assertSame('N(f"oo)="V(b"ar)" N(ke"y)', trim($attributes->defaults([])));
-        $this->assertSame('N(ke"y)', trim($attributes->without('f"oo')));
-        $this->assertSame('N(f"oo)="V(b"ar)"', trim($attributes->only('f"oo')));
-    }
-
-    /**
-     * @group legacy
-     */
-    public function testTriggersDeprecationWithoutEscaper(): void
-    {
-        $this->expectDeprecation('Since symfony/ux-twig-component 2.24: Not passing an "Symfony\UX\TwigComponent\Escaper\HtmlAttributeEscaperInterface" to "Symfony\UX\TwigComponent\ComponentAttributes" is deprecated and will throw in 3.0.');
+        $this->expectException(\TypeError::class);
         new ComponentAttributes([]);
     }
 
-    private function createEscaper(): HtmlAttributeEscaperInterface
+    /**
+     * @dataProvider nameProvider
+     */
+    public function testEscapeName(string $input, string $expected): void
     {
-        return new class implements HtmlAttributeEscaperInterface {
-            public function escapeName(string $name, string $charset = 'UTF-8'): string
-            {
-                return $name;
-            }
+        $runtime = new EscaperRuntime();
+        $attributes = new ComponentAttributes([$input => 'foo'], $runtime);
 
-            public function escapeValue(string $value, string $charset = 'UTF-8'): string
-            {
-                return $value;
-            }
-        };
+        $this->assertSame(' '.$expected.'="foo"', (string) $attributes);
+    }
+
+    /**
+     * @dataProvider valueProvider
+     */
+    public function testEscapeValue(string $input, string $expected): void
+    {
+        $runtime = new EscaperRuntime();
+        $attributes = new ComponentAttributes(['foo' => $input], $runtime);
+
+        $this->assertSame(' foo="'.$expected.'"', (string) $attributes);
+    }
+
+    public static function nameProvider(): iterable
+    {
+        // Should not escape
+        yield 'basic' => ['class', 'class'];
+        yield 'data-' => ['data-user', 'data-user'];
+        yield 'aria' => ['aria-label', 'aria-label'];
+        yield 'alnum' => ['attr123', 'attr123'];
+        // Should escape
+        yield 'double quote' => ['"', '&quot;'];
+        yield 'ampersand' => ['&', '&amp;'];
+        yield 'less than' => ['<', '&lt;'];
+        yield 'greater than' => ['>', '&gt;'];
+        // Twig strict escaping
+        yield 'scripts' => ['><script>', '&gt;&lt;script&gt;'];
+        yield 'single quote' => ["'", '&#x27;'];
+        yield 'unicode' => ['data-🚀', 'data-&#x1F680;'];
+    }
+
+    public static function valueProvider(): iterable
+    {
+        // Should not escape
+        yield 'plain text' => ['Hello', 'Hello'];
+        yield 'numeric value' => ['42', '42'];
+        yield 'js url' => ['javascript:alert(1)', 'javascript:alert(1)'];
+        // Should escape
+        yield 'ampersand' => ['Hello & Welcome', 'Hello &amp; Welcome'];
+        yield 'single quote' => ["O'Reilly", 'O&#039;Reilly'];
+        yield 'double quotes' => ['"Hello"', '&quot;Hello&quot;'];
+        yield 'less than' => ['<', '&lt;'];
+        yield 'greater than' => ['>', '&gt;'];
+        yield 'script' => ['<script>alert(1)</script>', '&lt;script&gt;alert(1)&lt;/script&gt;'];
+        yield 'inline xss' => ['<img src=x onerror=alert(1)>', '&lt;img src=x onerror=alert(1)&gt;'];
+        yield 'malicious attr' => ['foo="bar"', 'foo=&quot;bar&quot;'];
+        yield 'sql injection' => ["' OR 1=1 --", '&#039; OR 1=1 --'];
+        yield 'url encoded xss' => ['%3Cscript%3Ealert(1)%3C/script%3E', '%3Cscript%3Ealert(1)%3C/script%3E'];
     }
 }

@@ -30,7 +30,6 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\CacheWarmer\TwigComponentCacheWarmer;
 use Symfony\UX\TwigComponent\Command\TwigComponentDebugCommand;
-use Symfony\UX\TwigComponent\ComponentAttributesFactory;
 use Symfony\UX\TwigComponent\ComponentFactory;
 use Symfony\UX\TwigComponent\ComponentProperties;
 use Symfony\UX\TwigComponent\ComponentRenderer;
@@ -93,7 +92,7 @@ final class TwigComponentExtension extends Extension implements ConfigurationInt
                 new Reference('event_dispatcher'),
                 new AbstractArgument(\sprintf('Added in %s.', TwigComponentPass::class)),
                 new AbstractArgument(\sprintf('Added in %s.', TwigComponentPass::class)),
-                new Reference('ux.twig_component.component_attributes_factory'),
+                new Reference('twig'),
             ])
             ->addTag('kernel.reset', ['method' => 'reset'])
         ;
@@ -105,12 +104,6 @@ final class TwigComponentExtension extends Extension implements ConfigurationInt
                 new Reference('property_accessor'),
                 new AbstractArgument(\sprintf('Added in %s.', TwigComponentPass::class)),
                 new Reference('cache.ux.twig_component', ContainerInterface::IGNORE_ON_INVALID_REFERENCE),
-            ])
-        ;
-
-        $container->register('ux.twig_component.component_attributes_factory', ComponentAttributesFactory::class)
-            ->setArguments([
-                new Reference('twig'),
             ])
         ;
 

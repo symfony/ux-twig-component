@@ -17,6 +17,8 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Contracts\Service\ResetInterface;
 use Symfony\UX\TwigComponent\Event\PostMountEvent;
 use Symfony\UX\TwigComponent\Event\PreMountEvent;
+use Twig\Environment;
+use Twig\Runtime\EscaperRuntime;
 
 /**
  * @author Kevin Bond <kevinbond@gmail.com>
@@ -38,7 +40,7 @@ final class ComponentFactory implements ResetInterface
         private EventDispatcherInterface $eventDispatcher,
         private array $config,
         private readonly array $classMap,
-        private ComponentAttributesFactory $componentAttributesFactory,
+        private readonly Environment $twig,
     ) {
     }
 
@@ -120,7 +122,7 @@ final class ComponentFactory implements ResetInterface
         return new MountedComponent(
             $componentMetadata->getName(),
             $component,
-            $this->componentAttributesFactory->create([...$attributes, ...$data]),
+            new ComponentAttributes([...$attributes, ...$data], $this->twig->getRuntime(EscaperRuntime::class)),
             $originalData,
             $postMount->getExtraMetadata(),
         );

@@ -14,11 +14,11 @@ namespace Symfony\UX\TwigComponent\Tests\Unit\EventListener;
 use PHPUnit\Framework\TestCase;
 use Symfony\UX\TwigComponent\ComponentAttributes;
 use Symfony\UX\TwigComponent\ComponentMetadata;
-use Symfony\UX\TwigComponent\Escaper\HtmlAttributeEscaperInterface;
 use Symfony\UX\TwigComponent\Event\PostRenderEvent;
 use Symfony\UX\TwigComponent\Event\PreRenderEvent;
 use Symfony\UX\TwigComponent\EventListener\TwigComponentLoggerListener;
 use Symfony\UX\TwigComponent\MountedComponent;
+use Twig\Runtime\EscaperRuntime;
 
 /**
  * @author Simon André <smn.andre@gmail.com>
@@ -29,9 +29,8 @@ class TwigComponentLoggerListenerTest extends TestCase
     {
         $logger = new TwigComponentLoggerListener();
         $this->assertSame([], $logger->getEvents());
-        $escaper = $this->createHtmlAttributeEscaper();
 
-        $mounted = new MountedComponent('foo', new \stdClass(), new ComponentAttributes([], $escaper));
+        $mounted = new MountedComponent('foo', new \stdClass(), new ComponentAttributes([], new EscaperRuntime()));
         $eventA = new PreRenderEvent($mounted, new ComponentMetadata(['template' => 'bar']), []);
         $logger->onPreRender($eventA);
         $eventB = new PostRenderEvent($mounted);
@@ -43,27 +42,12 @@ class TwigComponentLoggerListenerTest extends TestCase
     public function testLoggerReset(): void
     {
         $logger = new TwigComponentLoggerListener();
-        $escaper = $this->createHtmlAttributeEscaper();
+        $escaper = new EscaperRuntime();
 
         $logger->onPreRender(new PreRenderEvent(new MountedComponent('foo', new \stdClass(), new ComponentAttributes([], $escaper)), new ComponentMetadata(['template' => 'bar']), []));
         $this->assertNotSame([], $logger->getEvents());
 
         $logger->reset();
         $this->assertSame([], $logger->getEvents());
-    }
-
-    private function createHtmlAttributeEscaper(): HtmlAttributeEscaperInterface
-    {
-        return new class implements HtmlAttributeEscaperInterface {
-            public function escapeName(string $name, string $charset = 'UTF-8'): string
-            {
-                return $name;
-            }
-
-            public function escapeValue(string $value, string $charset = 'UTF-8'): string
-            {
-                return $value;
-            }
-        };
     }
 }
