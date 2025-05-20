@@ -144,7 +144,7 @@ final class ComponentAttributes implements \Stringable, \IteratorAggregate, \Cou
     public function defaults(iterable $attributes): self
     {
         if ($attributes instanceof StimulusAttributes) {
-            $attributes = $attributes->toEscapedArray();
+            $attributes = $attributes->toArray();
         }
 
         if ($attributes instanceof \Traversable) {

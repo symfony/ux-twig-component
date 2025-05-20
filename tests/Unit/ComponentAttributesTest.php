@@ -143,7 +143,7 @@ final class ComponentAttributesTest extends TestCase
         ], new EscaperRuntime());
 
         $stimulusAttributes = new StimulusAttributes(new Environment(new ArrayLoader()));
-        $stimulusAttributes->addController('foo', ['name' => 'ryan', 'some_array' => ['a', 'b']]);
+        $stimulusAttributes->addController('foo', ['name' => 'ryan', 'some_array' => ['a', 'b'], 'some_array_with_keys' => ['key1' => 'value1', 'key2' => 'value2']]);
         $attributes = $attributes->defaults($stimulusAttributes);
 
         $this->assertEquals([
@@ -151,8 +151,10 @@ final class ComponentAttributesTest extends TestCase
             'data-controller' => 'foo live',
             'data-live-data-value' => '{}',
             'data-foo-name-value' => 'ryan',
-            'data-foo-some-array-value' => '[&quot;a&quot;,&quot;b&quot;]',
+            'data-foo-some-array-value' => '["a","b"]',
+            'data-foo-some-array-with-keys-value' => '{"key1":"value1","key2":"value2"}',
         ], $attributes->all());
+        $this->assertSame(' data-controller="foo live" data-foo-name-value="ryan" data-foo-some-array-value="[&quot;a&quot;,&quot;b&quot;]" data-foo-some-array-with-keys-value="{&quot;key1&quot;:&quot;value1&quot;,&quot;key2&quot;:&quot;value2&quot;}" class="foo" data-live-data-value="{}"', (string) $attributes);
     }
 
     public function testCanAddStimulusActionViaStimulusAttributes(): void
@@ -175,6 +177,7 @@ final class ComponentAttributesTest extends TestCase
             'class' => 'foo',
             'data-action' => 'foo#barMethod live#foo',
         ], $attributes->all());
+        $this->assertSame(' data-action="foo#barMethod live#foo" class="foo"', (string) $attributes);
     }
 
     public function testBooleanBehaviour(): void
