@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.25.2
+
+-   Fix `ComponentAttributes` rendering when using `StimulusAttributes` as default attributes
+
 ## 2.25.1
 
 -   [SECURITY] `ComponentAttributes` now requires a `Twig\Runtime\EscaperRuntime`
