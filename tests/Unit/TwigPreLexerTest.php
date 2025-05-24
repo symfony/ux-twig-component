@@ -168,7 +168,7 @@ final class TwigPreLexerTest extends TestCase
             {% component 'foo' %}
                 {% block content %}{% component 'bar' %}{% block content %}bar content{% endblock %}{% endcomponent %}
             {% endblock %}{% endcomponent %}
-            EOF
+            EOF,
         ];
         yield 'component_where_entire_default_block_is_embedded_component_self_closing' => [
             <<<EOF
@@ -180,7 +180,7 @@ final class TwigPreLexerTest extends TestCase
             {% component 'foo' %}
                 {% block content %}{{ component('bar') }}
             {% endblock %}{% endcomponent %}
-            EOF
+            EOF,
         ];
 
         yield 'component_where_entire_default_block_is_twig_embed' => [
@@ -293,7 +293,7 @@ final class TwigPreLexerTest extends TestCase
                 'src/Twig/MealPlanner.php',
                 'templates/components/MealPlanner.html.twig',
             ] }) }}
-            EOF
+            EOF,
         ];
 
         yield 'component_with_dashed_attribute' => [
